@@ -14,6 +14,9 @@ import com.chella.userservice.repository.UserRepository;
 import com.chella.userservice.security.CustomUserDetails;
 import com.chella.userservice.security.JwtUtil;
 import com.chella.userservice.service.UserService;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,21 +34,27 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private final MeterRegistry meterRegistry;
+    private final ObservationRegistry observationRegistry;
 
     @Override
     public UserResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicateEmailException("Email is already registered");
-        }
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new DuplicateUsernameException("Username is already taken");
-        }
+        return Observation.createNotStarted("user.registration", observationRegistry)
+            .observe(() -> {
+                if (userRepository.existsByEmail(request.getEmail())) {
+                    throw new DuplicateEmailException("Email is already registered");
+                }
+                if (userRepository.existsByUsername(request.getUsername())) {
+                    throw new DuplicateUsernameException("Username is already taken");
+                }
 
-        User user = userMapper.toEntity(request);
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+                User user = userMapper.toEntity(request);
+                user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        User savedUser = userRepository.save(user);
-        return userMapper.toResponse(savedUser);
+                User savedUser = userRepository.save(user);
+                meterRegistry.counter("users.registered.count").increment();
+                return userMapper.toResponse(savedUser);
+            });
     }
 
     @Override

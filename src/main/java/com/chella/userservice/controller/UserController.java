@@ -5,7 +5,7 @@ import com.chella.userservice.dto.request.RegisterRequest;
 import com.chella.userservice.dto.response.LoginResponse;
 import com.chella.userservice.dto.response.UserResponse;
 import com.chella.userservice.service.UserService;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
