@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse register(RegisterRequest request) {
-        return Observation.createNotStarted("user.registration", observationRegistry)
+        return Observation.createNotStarted("user.register", observationRegistry)
             .observe(() -> {
                 if (userRepository.existsByEmail(request.getEmail())) {
                     throw new DuplicateEmailException("Email is already registered");
