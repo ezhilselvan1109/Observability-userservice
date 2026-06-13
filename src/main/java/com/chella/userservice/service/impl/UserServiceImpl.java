@@ -52,7 +52,7 @@ public class UserServiceImpl implements UserService {
                 user.setPassword(passwordEncoder.encode(request.getPassword()));
 
                 User savedUser = userRepository.save(user);
-                meterRegistry.counter("users.registered.count").increment();
+                meterRegistry.counter("users_registered_total").increment();
                 return userMapper.toResponse(savedUser);
             });
     }
